@@ -40,7 +40,9 @@ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
 ![Verification ping and internet access](img/image5.png)
 
-**Key services:** Hyper-V virtual switches, Netplan, IP forwarding, iptables MASQUERADE **Running on:** ExternalGateway and InternalGateway
+**Key services:** Hyper-V virtual switches, Netplan, IP forwarding, iptables MASQUERADE 
+
+**Running on:** ExternalGateway and InternalGateway
 
 -
 
@@ -63,11 +65,11 @@ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
 ![Apache2 installation and web page](img/2-image1.png)
 
-- Self-signed TLS certificate generated using OpenSSL and applied to Apache2 via default-ssl.conf
+- Self-signed TLS certificate generated using OpenSSL and applied to Apache2 via `default-ssl.conf`
 
 ![TLS certificate generation](img/2-image2.png)
 
-- Strong cipher suites enforced and legacy protocols (SSLv2, SSLv3, TLS 1.0/1.1) disabled in ssl-params.conf
+- Strong cipher suites enforced and legacy protocols (SSLv2, SSLv3, TLS 1.0/1.1) disabled in `ssl-params.conf`
 
 ![Cipher suite configuration](img/2-image3.png)
 
