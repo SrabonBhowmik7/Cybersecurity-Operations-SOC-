@@ -460,3 +460,46 @@ This sprint demonstrated how a poorly coded PHP login page hosted on Apache2 can
 
 Three mitigations were implemented and verified: prepared statements to separate user input from SQL code, PHP error display disabled to prevent information leakage, and least privilege database permissions to limit the damage an attacker can cause even if access is gained. Together these controls directly address the root causes of the vulnerability and reflect secure coding and database hardening practices standard in real-world SOC environments.
 
+-
+
+## Activity 2.2: DNS Server
+
+**Purpose:** Provide internal domain name resolution so all services in the lab are accessible by hostname, not just IP address.
+
+**What was built:** BIND9 was installed and configured on InternalGateway (`192.168.1.1`) as an authoritative DNS server for the lab domain, with forwarding to Google's public resolvers for external queries.
+
+| Zone | Type | Records configured |
+| --- | --- | --- |
+| Forward lookup zone | Master | NS, A records (ns1, www) |
+| Reverse lookup zone | Master | PTR records for 192.168.1.x |
+
+**Configuration steps:**
+
+- `named.conf.options` updated to forward external queries to `8.8.8.8` and `8.8.4.4`
+
+![named.conf.options configuration](img/2-2-image1.png)
+
+- Forward zone file created mapping `www` to `192.168.1.80` (UbuntuServer)
+
+![Forward zone file](img/2-2-image2.png)
+
+- Reverse zone file created for PTR resolution within the `192.168.1.x` subnet
+
+![Reverse zone file](img/2-2-image3.png)
+
+- Both zone files validated with `named-checkzone` before reloading BIND9
+- All internal VMs updated via netplan to use `192.168.1.1` as their DNS server
+- Squid proxy updated with `dns_nameservers 192.168.1.1` for consistent resolution
+
+![Squid and netplan DNS update](img/2-2-image4.png)
+
+**Verification:** DNS resolution confirmed using `dig` and `nslookup` from both UbuntuServer and UbuntuDesktop. The web server was accessible by domain name in a browser over both HTTP and HTTPS.
+
+![DNS verification nslookup and dig](img/2-2-image5.png)
+
+![Web server accessible by domain name](img/2-2-image6.png)
+
+**Key services:** BIND9 (forward and reverse zones), DNS forwarding, Squid DNS integration
+
+**Running on:** InternalGateway (`192.168.1.1`)
+
