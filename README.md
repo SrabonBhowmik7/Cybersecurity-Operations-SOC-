@@ -127,9 +127,9 @@ sudo systemctl start mysql
 sudo systemctl enable mysql
 ```
 
-![Install PHP and MySQL](img/s1-image15.png)
+![Install PHP and MySQL](img/sp1-a-image1.png)
 
-![MySQL service status](img/s1-image5.png)
+![MySQL service status](img/sp1-a-image2.png)
 
 Verify with:
 
@@ -138,7 +138,7 @@ php -v
 sudo systemctl status mysql
 ```
 
-![Verify PHP and MySQL](img/s1-image1.png)
+![Verify PHP and MySQL](img/sp1-a-image3.png)
 
 ---
 
@@ -163,9 +163,9 @@ SELECT * FROM users;
 EXIT;
 ```
 
-![Create database](img/s1-image12.png)
+![Create database](img/sp1-a-image4.png)
 
-![Database table](img/s1-image13.png)
+![Database table](img/sp1-a-image5.png)
 
 Inside MySQL, run these commands:
 
@@ -176,7 +176,7 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-![Create webuser](img/s1-image17.png)
+![Create webuser](img/sp1-a-image6.png)
 
 ---
 
@@ -209,7 +209,7 @@ mysqli_close($conn);
 ?>
 ```
 
-![Vulnerable login page](img/s1-image6.png)
+![Vulnerable login page](img/sp1-a-image7.png)
 
 ---
 
@@ -224,7 +224,7 @@ sudo systemctl restart apache2
 curl 'http://localhost/login.php?user=admin'
 ```
 
-![Apache2 restart](img/s1-image4.png)
+![Apache2 restart](img/sp1-a-image8.png)
 
 Result:
 
@@ -245,7 +245,7 @@ Open Firefox and navigate to the login page with a normal username:
 http://192.168.1.80/login.php?user=admin
 ```
 
-![Normal login page](img/s1-image22.png)
+![Normal login page](img/sp1-a-image9.png)
 
 - **Test basic SQL injection: Bypass login**
 
@@ -255,7 +255,7 @@ Replace `admin` in the URL with a SQL injection payload. This tricks the query i
 http://192.168.1.80/login.php?user=' OR '1'='1
 ```
 
-![Basic SQL injection](img/s1-image9.png)
+![Basic SQL injection](img/sp1-a-image10.png)
 
 - **Test comment-based injection**
 
@@ -265,7 +265,7 @@ This payload comments out the rest of the SQL query after the username:
 http://192.168.1.80/login.php?user=admin'%23
 ```
 
-![Comment-based injection](img/s1-image3.png)
+![Comment-based injection](img/sp1-a-image11.png)
 
 - **Install sqlmap on UbuntuDesktop**
 
@@ -276,7 +276,7 @@ sudo apt install sqlmap -y
 sqlmap --version
 ```
 
-![Install sqlmap](img/s1-image21.png)
+![Install sqlmap](img/sp1-a-image12.png)
 
 - **Run sqlmap to detect vulnerability and list databases**
 
@@ -286,7 +286,7 @@ Point sqlmap at the vulnerable parameter. Answer yes to any prompts:
 sqlmap -u "http://192.168.1.80/login.php?user=admin" --dbs --batch
 ```
 
-![sqlmap list databases](img/s1-image19.png)
+![sqlmap list databases](img/sp1-a-image13.png)
 
 - **List tables inside testdb**
 
@@ -296,7 +296,7 @@ Now drill into the testdb database to find its tables:
 sqlmap -u "http://192.168.1.80/login.php?user=admin" -D testdb --tables --batch
 ```
 
-![sqlmap list tables](img/s1-image7.png)
+![sqlmap list tables](img/sp1-a-image14.png)
 
 - **Dump all data from the users table**
 
@@ -306,7 +306,7 @@ Extract all usernames and passwords from the users table:
 sqlmap -u "http://192.168.1.80/login.php?user=admin" -D testdb -T users --dump --batch
 ```
 
-![sqlmap dump users](img/s1-image20.png)
+![sqlmap dump users](img/sp1-a-image15.png)
 
 - **Save sqlmap output as evidence**
 
@@ -317,9 +317,9 @@ sqlmap -u "http://192.168.1.80/login.php?user=admin" -D testdb -T users --dump -
 cat ~/sqli_evidence.txt
 ```
 
-![sqlmap evidence file](img/s1-image18.png)
+![sqlmap evidence file](img/sp1-a-image16.png)
 
-![sqlmap evidence output](img/s1-image8.png)
+![sqlmap evidence output](img/sp1-a-image17.png)
 
 ---
 
@@ -369,7 +369,7 @@ if($result->num_rows > 0){
 ?>
 ```
 
-![Prepared statements](img/s1-image23.png)
+![Prepared statements](img/sp1-a-image18.png)
 
 Test it:
 
@@ -379,7 +379,7 @@ curl "http://localhost/secure-login.php?user=' OR '1'='1"
 
 Output: `User not found`
 
-![Prepared statements test](img/s1-image2.png)
+![Prepared statements test](img/sp1-a-image19.png)
 
 ---
 
@@ -396,7 +396,7 @@ display_errors = Off
 log_errors = On
 ```
 
-![PHP error display](img/s1-image14.png)
+![PHP error display](img/sp1-a-image20.png)
 
 Verify it is working:
 
@@ -407,7 +407,7 @@ echo "<?php mysqli_connect('wrong','wrong','wrong','wrong'); ?>" | sudo tee /var
 curl http://localhost/errortest.php
 ```
 
-![Error display verification](img/s1-image10.png)
+![Error display verification](img/sp1-a-image21.png)
 
 Restart Apache2:
 
@@ -438,7 +438,7 @@ SHOW GRANTS FOR 'webuser'@'localhost';
 EXIT;
 ```
 
-![Least privilege configuration](img/s1-image11.png)
+![Least privilege configuration](img/sp1-a-image22.png)
 
 Test the restriction is working:
 
@@ -446,7 +446,7 @@ Test the restriction is working:
 sudo mysql -u webuser -ppassword -e "DROP TABLE testdb.users;"
 ```
 
-![Least privilege test](img/s1-image16.png)
+![Least privilege test](img/sp1-a-image23.png)
 
 Output: `ERROR 1142: DROP command denied to user 'webuser'@'localhost'`
 
