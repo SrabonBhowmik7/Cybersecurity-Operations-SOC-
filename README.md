@@ -41,3 +41,49 @@ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 ![Verification ping and internet access](img/image5.png)
 
 **Key services:** Hyper-V virtual switches, Netplan, IP forwarding, iptables MASQUERADE **Running on:** ExternalGateway and InternalGateway
+
+-
+
+## Activity 2.1: Secure Web Server
+
+**Purpose:** Deploy a production-style HTTPS web server with encrypted traffic and controlled proxy access for internal clients.
+
+**What was built:** Apache2 was installed on UbuntuServer (192.168.1.80) and configured to serve web content over both HTTP and HTTPS. A Squid forwarding proxy was installed on InternalGateway to manage and control outbound web access for internal network clients.
+
+| Component | Detail |
+| --- | --- |
+| Web server | Apache2 on UbuntuServer (192.168.1.80) |
+| Certificate | Self-signed, 2048-bit RSA, 365 days (OpenSSL) |
+| Protocol | HTTPS port 443, TLS 1.2 minimum |
+| Proxy | Squid on InternalGateway, port 8080 |
+
+**Configuration steps:**
+
+- Apache2 installed and custom web page created at /var/www/html/index.html
+
+![Apache2 installation and web page](img/2-image3.png)
+
+- Self-signed TLS certificate generated using OpenSSL and applied to Apache2 via default-ssl.conf
+
+![TLS certificate generation](img/2-image5.png)
+
+- Strong cipher suites enforced and legacy protocols (SSLv2, SSLv3, TLS 1.0/1.1) disabled in ssl-params.conf
+
+![Cipher suite configuration](img/2-image2.png)
+
+- Squid installed on InternalGateway and configured to listen on port 8080 as a forwarding proxy
+
+![Squid installation](img/2-image1.png)
+
+- Squid proxy configured to permit internal network requests only and block Australian websites during office hours (9am–5pm)
+
+![Squid proxy configuration](img/2-image4.png)
+
+**Verification:** The web page was confirmed loading over both http://192.168.1.80 and https://192.168.1.80 in a browser on UbuntuDesktop. HTTPS traffic was captured on port 443, confirming the payload was encrypted. Squid access logs confirmed web pages were being cached and the Australian website block was active during office hours.
+
+![Verification screenshot](img/2-image6.png)
+
+**Key services:** Apache2, OpenSSL (TLS 1.2+), Squid proxy (port 8080)
+
+**Running on:** UbuntuServer (192.168.1.80) and InternalGateway (192.168.1.1)
+
