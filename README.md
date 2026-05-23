@@ -503,3 +503,295 @@ Three mitigations were implemented and verified: prepared statements to separate
 
 **Running on:** InternalGateway (`192.168.1.1`)
 
+-
+
+## Sprint 2: DNS Spoofing
+
+## Target: BIND9 DNS Server on InternalGateway (192.168.1.1)
+
+DNS Spoofing manipulates DNS responses to return false IP addresses, redirecting victims to attacker-controlled servers without their knowledge. In this sprint, you will directly modify the BIND9 zone file on InternalGateway to redirect domain lookups to a wrong IP, then verify the redirection and restore the correct records.
+
+---
+
+## Prerequisites
+
+- Activity 2 (DNS Server) fully complete
+- BIND9 running on InternalGateway (`192.168.1.1`)
+- UbuntuDesktop configured to use `192.168.1.1` as DNS server
+- `www.hasibulwilproject.com` resolves to `192.168.1.80` correctly
+- Access to InternalGateway terminal
+
+This is the focused Sprint 2 manual.
+
+## Prerequisites: Confirm BIND9 and DNS are working first
+
+- Attack steps: 8 steps, each labelled with which VM to use
+- Evidence: Multiple screenshots needed including before and after comparison
+- Defense: 4 mitigations with exact commands
+
+Each step is labelled with the VM you need to be on (InternalGateway or UbuntuDesktop) since this attack switches between two machines.
+
+---
+
+## Attack Steps: Execute in order
+
+### Step 1 — Document the correct DNS baseline (UbuntuDesktop)
+
+Before making any changes, record the correct DNS response. This is our previous evidence.
+
+```
+nslookup www.hasibulwilproject.com 192.168.1.1
+dig www.hasibulwilproject.com
+```
+
+Reverse lookup zone file:
+
+![Reverse lookup zone file](img/s2-image19.png)
+
+![nslookup baseline](img/s2-image12.png)
+
+![dig baseline](img/s2-image4.png)
+
+---
+
+### Step 2 — Open the zone file on InternalGateway
+
+Log into InternalGateway and open the forward lookup zone file:
+
+```
+sudo nano /etc/bind/db.hasibulwilproject.com
+```
+
+Forward zone file:
+
+![Forward zone file](img/s2-image5.png)
+
+---
+
+### Step 3 — Change www A record to attacker IP (InternalGateway)
+
+Modify the `www` record to redirect traffic to UbuntuDesktop (`10.10.1.100`) instead of the real web server:
+
+```
+# Find this line:
+www     IN      A       192.168.1.80
+
+# Change it to:
+www     IN      A       10.10.1.100
+```
+
+![Changed A record](img/s2-image9.png)
+
+---
+
+### Step 4 — Increment the serial number (InternalGateway)
+
+Increase the serial number in the SOA record so BIND9 recognises the zone has changed:
+
+```
+# Find the serial line and increment by 1:
+# If current serial is 3, change to 4
+3         ; Serial
+
+# becomes:
+4         ; Serial
+```
+
+![Incremented serial number](img/s2-image13.png)
+
+---
+
+### Step 5 — Save and restart BIND9
+
+```
+sudo systemctl restart bind9
+```
+
+---
+
+### Step 6 — Verify the spoofed DNS response (UbuntuDesktop)
+
+Query the DNS server and confirm it now returns the wrong IP:
+
+```
+nslookup www.hasibulwilproject.com 192.168.1.1
+dig www.hasibulwilproject.com
+```
+
+![Spoofed nslookup response](img/s2-image10.png)
+
+![Spoofed dig response](img/s2-image7.png)
+
+It returns spoofed IP: `10.10.1.100` instead of `192.168.1.80`
+
+---
+
+### Step 7 — Verify redirection in browser (UbuntuDesktop)
+
+Open Firefox and navigate to the domain. The page will fail to load or show wrong content — proving the redirect worked:
+
+```
+http://www.hasibulwilproject.com
+```
+
+![Browser redirection failure](img/s2-image8.png)
+
+Page fails to load or shows wrong server - DNS spoofing confirmed
+
+---
+
+### Step 8 — Save evidence and restore correct DNS (InternalGateway)
+
+After capturing all screenshots, restore the correct IP address in the zone file:
+
+```
+sudo nano /etc/bind/db.hasibulwilproject.com
+
+# Revert back to:
+www     IN      A       192.168.1.80
+
+# Save and restart:
+sudo systemctl restart bind9
+```
+
+![Zone file restored](img/s2-image16.png)
+
+![DNS restored verification](img/s2-image3.png)
+
+`nslookup` returns correct IP `192.168.1.80` again.
+
+---
+
+## MITRE ATT&CK Reference
+
+Go to the MITRE ATT&CK page: https://attack.mitre.org/techniques/T1557/
+
+The DNS spoofing attack is classified under MITRE ATT&CK technique **T1557 (Adversary-in-the-Middle)**, which describes adversaries intercepting and manipulating network traffic between victims and legitimate resources. In this sprint, the BIND9 zone file on InternalGateway was directly modified to redirect `www.hasibulwilproject.com` from the legitimate web server (`192.168.1.80`) to an attacker-controlled IP (`10.10.1.100`), successfully demonstrating how DNS manipulation can redirect unsuspecting users without their knowledge.
+
+---
+
+## Mitigation & Defense Strategies
+
+### Defense 1 — Restrict zone file access
+
+Lock down who can query or transfer your zone files. This prevents unauthorised modification of DNS records.
+
+In internal gateway:
+
+```
+sudo nano /etc/bind/named.conf.options
+
+# Add inside options block:
+allow-query { 192.168.1.0/24; 10.10.1.0/24; };
+allow-transfer { none; };
+allow-recursion { 192.168.1.0/24; 10.10.1.0/24; };
+```
+
+![Zone file access restriction](img/s2-image1.png)
+
+```
+# Restart BIND9:
+sudo systemctl restart bind9
+```
+
+Test DNS still works:
+
+```
+nslookup www.hasibulwilproject.com 192.168.1.1
+```
+
+![DNS test after restriction](img/s2-image18.png)
+
+---
+
+### Defense 2 — Enable DNSSEC validation
+
+DNSSEC digitally signs DNS records so clients can verify responses are authentic and have not been tampered with.
+
+```
+sudo nano /etc/bind/named.conf.options
+
+# Ensure this line is present:
+dnssec-validation auto;
+```
+
+![DNSSEC configuration](img/s2-image17.png)
+
+```
+# Restart BIND9:
+sudo systemctl restart bind9
+
+# Verify:
+sudo named-checkconf
+```
+
+![DNSSEC verification](img/s2-image11.png)
+
+It is showing no errors. It cryptographically verifies DNS responses are authentic.
+
+---
+
+### Defense 3 — Enable BIND9 query logging
+
+Log all DNS queries to detect unusual lookup patterns and unauthorised zone modifications early.
+
+```
+sudo nano /etc/bind/named.conf
+
+# Add at the bottom:
+logging {
+  channel query_log {
+    file "/var/log/named/query.log";
+    severity dynamic;
+    print-time yes;
+  };
+  category queries { query_log; };
+};
+```
+
+![Query logging configuration](img/s2-image6.png)
+
+```
+# Create log directory:
+sudo mkdir -p /var/log/named
+sudo chown bind:bind /var/log/named
+sudo systemctl restart bind9
+```
+
+![Log directory creation](img/s2-image15.png)
+
+Result: No error message
+
+BIND9 query logging was enabled as a detection control to identify unusual DNS query patterns and support incident response in alignment with SOC monitoring practices.
+
+---
+
+### Defense 4 — Verify zone integrity with named-checkzone
+
+After any zone file change, always verify the file is correct before reloading BIND9.
+
+```
+sudo named-checkconf
+sudo named-checkzone hasibulwilproject.com \
+  /etc/bind/db.hasibulwilproject.com
+```
+
+![named-checkzone verification](img/s2-image2.png)
+
+Verify DNS is working correctly after all defenses:
+
+```
+# On UbuntuDesktop:
+nslookup www.hasibulwilproject.com 192.168.1.1
+```
+
+![Final DNS verification](img/s2-image14.png)
+
+---
+
+## Summary
+
+This sprint demonstrated how direct modification of the BIND9 zone file on InternalGateway can redirect legitimate domain lookups to an attacker-controlled IP address, silently redirecting unsuspecting users without any visible indication. The attack successfully spoofed `www.hasibulwilproject.com` from the legitimate web server (`192.168.1.80`) to an attacker-controlled address (`10.10.1.100`), confirmed through `nslookup` output and browser redirection failure. The attack was documented under MITRE ATT&CK **T1557 (Adversary-in-the-Middle)**.
+
+Three defenses were implemented and verified: zone file access restrictions to limit who can query and transfer DNS records, DNSSEC validation to cryptographically verify DNS response authenticity, and BIND9 query logging as a detection control to identify unusual DNS activity in support of SOC monitoring practices. Together these controls address both prevention and detection, significantly reducing the risk of DNS manipulation within the lab environment.
+
