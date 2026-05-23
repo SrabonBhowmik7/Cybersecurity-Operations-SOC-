@@ -59,7 +59,7 @@ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
 **Configuration steps:**
 
-- Apache2 installed and custom web page created at /var/www/html/index.html
+- Apache2 installed and custom web page created at `/var/www/html/index.html`
 
 ![Apache2 installation and web page](img/2-image1.png)
 
