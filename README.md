@@ -546,11 +546,11 @@ dig www.hasibulwilproject.com
 
 Reverse lookup zone file:
 
-![Reverse lookup zone file](img/s2-image19.png)
+![Reverse lookup zone file](img/sp2-a-image1.png)
 
-![nslookup baseline](img/s2-image12.png)
+![nslookup baseline](img/sp2-a-image2.png)
 
-![dig baseline](img/s2-image4.png)
+![dig baseline](img/sp2-a-image3.png)
 
 ---
 
@@ -564,7 +564,7 @@ sudo nano /etc/bind/db.hasibulwilproject.com
 
 Forward zone file:
 
-![Forward zone file](img/s2-image5.png)
+![Forward zone file](img/sp2-a-image4.png)
 
 ---
 
@@ -580,7 +580,7 @@ www     IN      A       192.168.1.80
 www     IN      A       10.10.1.100
 ```
 
-![Changed A record](img/s2-image9.png)
+![Changed A record](img/sp2-a-image4-1.png)
 
 ---
 
@@ -597,7 +597,7 @@ Increase the serial number in the SOA record so BIND9 recognises the zone has ch
 4         ; Serial
 ```
 
-![Incremented serial number](img/s2-image13.png)
+![Incremented serial number](img/sp2-a-image5.png)
 
 ---
 
@@ -618,9 +618,9 @@ nslookup www.hasibulwilproject.com 192.168.1.1
 dig www.hasibulwilproject.com
 ```
 
-![Spoofed nslookup response](img/s2-image10.png)
+![Spoofed nslookup response](img/sp2-a-image6.png)
 
-![Spoofed dig response](img/s2-image7.png)
+![Spoofed dig response](img/sp2-a-image7.png)
 
 It returns spoofed IP: `10.10.1.100` instead of `192.168.1.80`
 
@@ -634,7 +634,7 @@ Open Firefox and navigate to the domain. The page will fail to load or show wron
 http://www.hasibulwilproject.com
 ```
 
-![Browser redirection failure](img/s2-image8.png)
+![Browser redirection failure](img/sp2-a-image8.png)
 
 Page fails to load or shows wrong server - DNS spoofing confirmed
 
@@ -654,9 +654,9 @@ www     IN      A       192.168.1.80
 sudo systemctl restart bind9
 ```
 
-![Zone file restored](img/s2-image16.png)
+![Zone file restored](img/sp2-a-image9.png)
 
-![DNS restored verification](img/s2-image3.png)
+![DNS restored verification](img/sp2-a-image10.png)
 
 `nslookup` returns correct IP `192.168.1.80` again.
 
@@ -687,7 +687,7 @@ allow-transfer { none; };
 allow-recursion { 192.168.1.0/24; 10.10.1.0/24; };
 ```
 
-![Zone file access restriction](img/s2-image1.png)
+![Zone file access restriction](img/sp2-a-image11.png)
 
 ```
 # Restart BIND9:
@@ -700,7 +700,7 @@ Test DNS still works:
 nslookup www.hasibulwilproject.com 192.168.1.1
 ```
 
-![DNS test after restriction](img/s2-image18.png)
+![DNS test after restriction](img/sp2-a-image12.png)
 
 ---
 
@@ -715,7 +715,7 @@ sudo nano /etc/bind/named.conf.options
 dnssec-validation auto;
 ```
 
-![DNSSEC configuration](img/s2-image17.png)
+![DNSSEC configuration](img/sp2-a-image13.png)
 
 ```
 # Restart BIND9:
@@ -725,7 +725,7 @@ sudo systemctl restart bind9
 sudo named-checkconf
 ```
 
-![DNSSEC verification](img/s2-image11.png)
+![DNSSEC verification](img/sp2-a-image14.png)
 
 It is showing no errors. It cryptographically verifies DNS responses are authentic.
 
@@ -749,7 +749,7 @@ logging {
 };
 ```
 
-![Query logging configuration](img/s2-image6.png)
+![Query logging configuration](img/sp2-a-image15.png)
 
 ```
 # Create log directory:
@@ -758,7 +758,7 @@ sudo chown bind:bind /var/log/named
 sudo systemctl restart bind9
 ```
 
-![Log directory creation](img/s2-image15.png)
+![Log directory creation](img/s2-image16.png)
 
 Result: No error message
 
@@ -776,7 +776,7 @@ sudo named-checkzone hasibulwilproject.com \
   /etc/bind/db.hasibulwilproject.com
 ```
 
-![named-checkzone verification](img/s2-image2.png)
+![named-checkzone verification](img/sp2-a-image17.png)
 
 Verify DNS is working correctly after all defenses:
 
@@ -785,7 +785,7 @@ Verify DNS is working correctly after all defenses:
 nslookup www.hasibulwilproject.com 192.168.1.1
 ```
 
-![Final DNS verification](img/s2-image14.png)
+![Final DNS verification](img/sp2-a-image18.png)
 
 ---
 
