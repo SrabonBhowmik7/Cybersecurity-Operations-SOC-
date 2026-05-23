@@ -795,3 +795,88 @@ This sprint demonstrated how direct modification of the BIND9 zone file on Inter
 
 Three defenses were implemented and verified: zone file access restrictions to limit who can query and transfer DNS records, DNSSEC validation to cryptographically verify DNS response authenticity, and BIND9 query logging as a detection control to identify unusual DNS activity in support of SOC monitoring practices. Together these controls address both prevention and detection, significantly reducing the risk of DNS manipulation within the lab environment.
 
+-
+
+## Activity 3: Email Server
+
+**Purpose:** Deploy a fully functional mail server with SMTP and IMAP/POP3 support, and configure a desktop email client for end-to-end mail delivery within the lab domain.
+
+**What was built:** Postfix was installed on UbuntuServer (`192.168.1.80`) as the Mail Transfer Agent and Dovecot was installed to handle mail retrieval via IMAP and POP3. Thunderbird was configured on UbuntuDesktop as the email client, enabling full send and receive functionality within the lab domain.
+
+| Component | Role | Port |
+| --- | --- | --- |
+| Postfix | Mail Transfer Agent — sends and routes email | 25 (SMTP) |
+| Dovecot | Mail Delivery Agent — IMAP and POP3 retrieval | 143 (IMAP), 110 (POP3) |
+| Thunderbird | Email client on UbuntuDesktop | Connects to both above |
+
+---
+
+## Configuration Steps
+
+### Postfix
+
+- Nameservers updated on UbuntuServer and UbuntuDesktop to point to InternalGateway (`192.168.1.1`) before installation
+
+![Nameserver update](img/3-image1.png)
+
+- Postfix installed and configured as an Internet Site with the lab domain set as the mail domain during setup
+- `main.cf` updated to set `myhostname`, `mydomain`, `myorigin`, `mydestination`, `mynetworks` (covering `127.0.0.0/8`, `192.168.1.0/24`, and `10.10.1.0/24`), and `home_mailbox = Maildir/`
+
+![main.cf configuration](img/3-image2.png)
+
+- Virtual alias mappings created in `/etc/postfix/virtual` to route domain email addresses (e.g. `desktop-user@domain` and `server-user@domain`) to local Linux accounts
+
+![Virtual alias mappings](img/3-image3.png)
+
+- Alias database compiled using `postmap /etc/postfix/virtual` and Postfix restarted
+
+---
+
+### Dovecot
+
+- Dovecot installed including `dovecot-imapd`, `dovecot-pop3d`, `dovecot-lmtpd`, and `dovecot-core`
+- `mail_location` set to `maildir:~/Maildir` in `10-mail.conf`
+
+![10-mail.conf configuration](img/3-image4.png)
+
+- `mail_privileged_group = mail` uncommented in `10-mail.conf`
+- IMAP, POP3, and LMTP protocols enabled in `dovecot.conf`
+- Plaintext authentication enabled in `10-auth.conf` (`disable_plaintext_auth = no`, `auth_mechanisms = plain login`)
+- SSL disabled in `10-ssl.conf` for the lab environment
+- `10-master.conf` reviewed and configured to ensure correct service socket settings
+
+![10-master.conf configuration](img/3-image5.png)
+
+- Both Postfix and Dovecot restarted and listening ports verified using `ss -tuln` (ports 25 and 143 confirmed active)
+
+---
+
+### Users and Client
+
+- Two Linux user accounts created: `server-user` and `desktop-user` (both with password: `password`)
+
+![User accounts created](img/3-image6.png)
+
+- Thunderbird installed on UbuntuDesktop and configured with the `desktop-user` account using IMAP (port 143) and SMTP (port 25) pointing to UbuntuServer (`192.168.1.80`)
+
+![Thunderbird configuration](img/3-image7.png)
+
+---
+
+## Verification
+
+A test email was sent from UbuntuServer using the `echo` command piped to `mail`, and receipt was confirmed on the server by checking `Maildir/new`. An email was then sent from Thunderbird to the server user and verified on the server. Finally, emails were exchanged between two Thunderbird accounts to confirm full bidirectional delivery within the lab domain.
+
+![Email sent from UbuntuServer](img/3-image8.png)
+
+![Maildir verification](img/3-image9.png)
+
+![Thunderbird send and receive](img/3-image10.png)
+
+![Bidirectional email delivery](img/3-image11.png)
+
+---
+
+**Key services:** Postfix (MTA), Dovecot (IMAP/POP3/LMTP), Thunderbird
+
+**Running on:** UbuntuServer (`192.168.1.80`) with Thunderbird on UbuntuDesktop (`10.10.1.100`)
