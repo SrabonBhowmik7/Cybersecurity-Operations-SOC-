@@ -928,7 +928,7 @@ Verify with:
 swaks --version
 ```
 
-![swaks installation and version](img/s3-image10.png)
+![swaks installation and version](img/sp3-a-image1.png)
 
 ---
 
@@ -941,7 +941,7 @@ sudo systemctl status postfix
 sudo ss -tuln | grep :25
 ```
 
-![Postfix running and port 25 active](img/s3-image2.png)
+![Postfix running and port 25 active](img/sp3-a-image2.png)
 
 ---
 
@@ -958,7 +958,7 @@ chmod +x ~/malware_simulation.sh
 cat ~/malware_simulation.sh
 ```
 
-![Simulated malware file created](img/s3-image17.png)
+![Simulated malware file created](img/sp3-a-image3.png)
 
 ---
 
@@ -985,7 +985,7 @@ Failure to act within 24 hours will result in permanent suspension.
 IT Security Team"
 ```
 
-![Phishing email sent via swaks](img/s3-image14.png)
+![Phishing email sent via swaks](img/sp3-a-image4.png)
 
 ---
 
@@ -997,7 +997,7 @@ Check the Postfix mail log to confirm the email was sent successfully.
 sudo grep "status=sent" /var/log/syslog
 ```
 
-![Mail log confirmation](img/s3-image11.png)
+![Mail log confirmation](img/sp3-a-image5.png)
 
 ---
 
@@ -1005,7 +1005,7 @@ sudo grep "status=sent" /var/log/syslog
 
 On UbuntuDesktop, open Thunderbird and check the inbox of `desktop-user@hasibulwilproject.com`. The spoofed email from `security@hasibulwilproject.com` should be visible.
 
-![Phishing email in Thunderbird inbox](img/s3-image19.png)
+![Phishing email in Thunderbird inbox](img/sp3-a-image6.png)
 
 ---
 
@@ -1029,7 +1029,9 @@ IT Support Team" \
       --attach ~/malware_simulation.sh
 ```
 
-![Phishing email with malware attachment sent](img/s3-image6.png)
+![swaks malware attachment command output](img/sp3-a-image7.png)
+
+![Phishing email with malware attachment sent](img/sp3-a-image7-1.png)
 
 ---
 
@@ -1037,7 +1039,7 @@ IT Support Team" \
 
 On UbuntuDesktop, open Thunderbird. The second email should appear with the `.sh` file attached. Open the email and confirm the attachment is visible.
 
-![Malware attachment visible in Thunderbird](img/s3-image7.png)
+![Malware attachment visible in Thunderbird](img/sp3-a-image8.png)
 
 ---
 
@@ -1045,7 +1047,7 @@ On UbuntuDesktop, open Thunderbird. The second email should appear with the `.sh
 
 In Thunderbird, right-click the phishing email and select **View Source** or **More > View Source**. Look at the `Received` and `From` headers to understand how spoofing works.
 
-![Email headers showing spoofed From address](img/s3-image3.png)
+![Email headers showing spoofed From address](img/sp3-a-image9.png)
 
 ---
 
@@ -1058,7 +1060,7 @@ sudo grep "desktop-user" /var/log/syslog > ~/phishing_evidence.txt
 cat ~/phishing_evidence.txt
 ```
 
-![Phishing evidence saved to file](img/s3-image16.png)
+![Phishing evidence saved to file](img/sp3-a-image10.png)
 
 ---
 
@@ -1082,7 +1084,7 @@ SPF records specify which mail servers are authorised to send email for your dom
 sudo systemctl restart bind9
 ```
 
-![SPF record added to DNS zone file](img/s3-image4.png)
+![SPF record added to DNS zone file](img/sp3-a-image11.png)
 
 Verify SPF record is live:
 
@@ -1090,7 +1092,7 @@ Verify SPF record is live:
 nslookup -type=TXT hasibulwilproject.com 192.168.1.1
 ```
 
-![SPF record verification](img/s3-image9.png)
+![SPF record verification](img/sp3-a-image12.png)
 
 ---
 
@@ -1112,7 +1114,7 @@ body_checks = regexp:/etc/postfix/mime_checks
 header_checks = regexp:/etc/postfix/mime_checks
 ```
 
-![main.cf with mime_checks added](img/s3-image1.png)
+![main.cf with mime_checks added](img/sp3-a-image13.png)
 
 Create the `mime_checks` file:
 
@@ -1127,7 +1129,7 @@ Add this content to the file:
 /Content-Disposition:.*filename=".*\.(sh|exe|bat|js|ps1)"/i    REJECT Dangerous attachment blocked
 ```
 
-![mime_checks file content](img/s3-image13.png)
+![mime_checks file content](img/sp3-a-image14.png)
 
 Restart Postfix:
 
@@ -1137,7 +1139,7 @@ sudo systemctl restart postfix
 
 Test it is working — try sending the malware attachment again from UbuntuServer:
 
-![Attachment blocked — 550 5.7.1 error](img/s3-image5.png)
+![Attachment blocked — 550 5.7.1 error](img/sp3-a-image15.png)
 
 The defense is now working perfectly. **550 5.7.1 Dangerous attachment blocked**
 
@@ -1147,7 +1149,7 @@ The defense is now working perfectly. **550 5.7.1 Dangerous attachment blocked**
 
 Check Thunderbird to confirm the email did NOT arrive in the inbox — no new email arrived.
 
-![Thunderbird inbox empty — email blocked](img/s3-image15.png)
+![Thunderbird inbox empty — email blocked](img/sp3-a-image16.png)
 
 ---
 
@@ -1159,7 +1161,7 @@ Open `main.cf`:
 sudo nano /etc/postfix/main.cf
 ```
 
-![main.cf open for header_checks](img/s3-image20.png)
+![main.cf open for header_checks](img/sp3-a-image17.png)
 
 Add this line:
 
@@ -1173,7 +1175,7 @@ Create the `header_checks` file:
 /^Subject:/    PREPEND X-Warning: CAUTION - This email may contain phishing content. Do not click suspicious links or open unexpected attachments.
 ```
 
-![header_checks file content](img/s3-image12.png)
+![header_checks file content](img/sp3-a-image18.png)
 
 Restart Postfix:
 
@@ -1192,11 +1194,11 @@ swaks --to desktop-user@hasibulwilproject.com \
       --body "Check your email headers"
 ```
 
-![Test email sent for banner verification](img/s3-image18.png)
+![Test email sent for banner verification](img/sp3-a-image19.png)
 
 Then check Thunderbird **More > View Source** for the `X-Warning` line.
 
-![X-Warning banner visible in email headers](img/s3-image8.png)
+![X-Warning banner visible in email headers](img/sp3-a-image20.png)
 
 The X-Warning banner is working perfectly.
 
