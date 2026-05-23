@@ -61,23 +61,23 @@ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
 - Apache2 installed and custom web page created at /var/www/html/index.html
 
-![Apache2 installation and web page](img/2-image3.png)
+![Apache2 installation and web page](img/2-image1.png)
 
 - Self-signed TLS certificate generated using OpenSSL and applied to Apache2 via default-ssl.conf
 
-![TLS certificate generation](img/2-image5.png)
+![TLS certificate generation](img/2-image2.png)
 
 - Strong cipher suites enforced and legacy protocols (SSLv2, SSLv3, TLS 1.0/1.1) disabled in ssl-params.conf
 
-![Cipher suite configuration](img/2-image2.png)
+![Cipher suite configuration](img/2-image3.png)
 
 - Squid installed on InternalGateway and configured to listen on port 8080 as a forwarding proxy
 
-![Squid installation](img/2-image1.png)
+![Squid installation](img/2-image4.png)
 
 - Squid proxy configured to permit internal network requests only and block Australian websites during office hours (9am–5pm)
 
-![Squid proxy configuration](img/2-image4.png)
+![Squid proxy configuration](img/2-image5.png)
 
 **Verification:** The web page was confirmed loading over both http://192.168.1.80 and https://192.168.1.80 in a browser on UbuntuDesktop. HTTPS traffic was captured on port 443, confirming the payload was encrypted. Squid access logs confirmed web pages were being cached and the Australian website block was active during office hours.
 
