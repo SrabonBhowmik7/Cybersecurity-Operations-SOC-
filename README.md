@@ -22,7 +22,11 @@
 
 ![Netplan config UbuntuServer](img/image4.png)
 
-- IP forwarding enabled on both gateway VMs (net.ipv4.ip_forward=1 in /etc/sysctl.conf)
+- IP forwarding enabled on both gateway VMs 
+
+```
+net.ipv4.ip_forward=1 in /etc/sysctl.conf
+```
 
 ![IP forwarding configuration](img/image1.png)
 
