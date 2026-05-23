@@ -758,7 +758,7 @@ sudo chown bind:bind /var/log/named
 sudo systemctl restart bind9
 ```
 
-![Log directory creation](img/s2-image16.png)
+![Log directory creation](img/sp2-a-image16.png)
 
 Result: No error message
 
