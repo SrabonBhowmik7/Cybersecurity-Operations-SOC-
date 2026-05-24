@@ -1,3 +1,111 @@
+# Cybersecurity Operations SOC Lab — User Manual
+
+**Project:** 7821ICT Work Integrated Learning — Trimester 1, 2026  
+**Team:** Delta Force (Group 37)  
+**Client:** Zahra Jadidi — Griffith University  
+**Platform:** Microsoft Azure (Hyper-V) — Ubuntu 22.04 LTS
+
+---
+
+## What Is This Repository?
+
+This repository is the complete step-by-step user manual for the Cybersecurity Operations SOC Lab built by Team Delta Force. It contains everything needed to understand, replicate, and operate the lab environment — including network setup, service configuration, cyberattack simulations, and defensive mitigations.
+
+The lab runs four Ubuntu 22.04 LTS virtual machines across three isolated network segments on Microsoft Azure, delivering six progressive configuration activities and four structured cyberattack simulation sprints.
+
+---
+
+## Lab Environment Overview
+
+```
+[ Internet ]
+      |
+[ ExternalGateway ]  ←  Border router, NAT, Firewall (iptables)
+      |
+[ DMZNetwork ]
+      |              \
+[ InternalGateway ]   [ UbuntuServer ]  ←  Web, Email, DNS
+  DNS, VPN, Squid          192.168.1.80
+      |
+[ InternalNetwork ]
+      |
+[ UbuntuDesktop ]  ←  Client, Attack machine, Thunderbird
+     10.10.1.100
+```
+
+| VM | IP Address | Role |
+| --- | --- | --- |
+| ExternalGateway | 192.168.1.254 | Border router, NAT gateway, Firewall |
+| InternalGateway | 192.168.1.1 | Internal router, DNS server, VPN host, Squid proxy |
+| UbuntuServer | 192.168.1.80 | Web server, Email server |
+| UbuntuDesktop | 10.10.1.100 | Client machine, attack testing |
+
+---
+
+## How to Use This Manual
+
+> **Important:** Each activity builds on the previous one. Follow the order below exactly. Do not skip ahead — services in later activities depend on earlier ones being fully working.
+
+| Step | Activity | What it does | Must complete first |
+| --- | --- | --- | --- |
+| 1 | Activity 1 — DMZ Network Setup | Provisions all 4 VMs and sets up network segments | Nothing — start here |
+| 2 | Activity 2.1 — Secure Web Server | Deploys Apache2 with HTTPS and Squid proxy | Activity 1 |
+| 3 | Activity 2.2 — DNS Server | Configures BIND9 for internal domain resolution | Activity 1 |
+| 4 | Sprint 1 — SQL Injection | Attacks the web server, then defends it | Activity 2.1 |
+| 5 | Sprint 2 — DNS Spoofing | Attacks the DNS server, then defends it | Activity 2.2 |
+| 6 | Activity 3 — Email Server | Deploys Postfix and Dovecot with Thunderbird | Activity 2.2 |
+| 7 | Sprint 3 — Phishing & Malware | Attacks the email server, then defends it | Activity 3 |
+| 8 | Activity 4-1 — Firewalls | Hardens ExternalGateway with iptables | Activities 1–3 |
+| 9 | Sprint 4 — Firewall Bypass | Attacks the firewall, then defends it | Activity 4-1 |
+
+---
+
+## Table of Contents
+
+1. [Activity 1 — DMZ Network Setup](#activity-1-dmz-network-setup)
+2. [Activity 2.1 — Secure Web Server](#activity-21-secure-web-server)
+3. [Activity 2.2 — DNS Server](#activity-22-dns-server)
+4. [Sprint 1 — SQL Injection](#sprint-1-sql-injection)
+5. [Sprint 2 — DNS Spoofing](#sprint-2-dns-spoofing)
+6. [Activity 3 — Email Server](#activity-3-email-server)
+7. [Sprint 3 — Phishing & Malware Simulation](#sprint-3-phishing--malware-simulation)
+8. [Activity 4-1 — Firewalls](#activity-4-1-firewalls)
+9. [Sprint 4 — Firewall Bypass](#sprint-4-firewall-bypass)
+
+---
+
+## Prerequisites Before Starting
+
+Before beginning Activity 1, make sure you have the following ready:
+
+- Access to a Microsoft Azure subscription with Hyper-V enabled
+- Four Ubuntu 22.04 LTS virtual machine images ready to provision
+- At least one network administrator account with sudo privileges on each VM
+- Basic familiarity with Linux terminal commands
+
+---
+
+## Tools Used in This Lab
+
+| Tool | Purpose |
+| --- | --- |
+| `netplan` | Static IP address configuration on each VM |
+| `iptables` / `netfilter-persistent` | Firewall rules and NAT |
+| `BIND9` | DNS server for internal domain resolution |
+| `Apache2` / `OpenSSL` | HTTPS web server with TLS |
+| `Squid` | Forwarding proxy for internal clients |
+| `Postfix` / `Dovecot` | Email server (SMTP and IMAP/POP3) |
+| `Thunderbird` | Email client for testing |
+| `OpenVPN` | VPN server for secure remote access |
+| `sqlmap` | Automated SQL injection testing tool |
+| `swaks` | Command-line SMTP testing and phishing simulation |
+| `nmap` | Port scanning for firewall testing |
+| `hping3` | Custom packet generation for bypass testing |
+| `Wireshark` / `tcpdump` | Packet capture and traffic analysis |
+
+---
+
+-
 # Cybersecurity-Operations-SOC-
 ## Activity 1: DMZ Network Setup
 
