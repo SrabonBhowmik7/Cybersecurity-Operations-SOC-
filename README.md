@@ -1377,7 +1377,7 @@ From Azure desktop:
 
 From Ubuntu desktop:
 
-![Internet access from UbuntuDesktop](img/4-image5.png
+![Internet access from UbuntuDesktop](img/4-image5.png)
 
 ---
 
