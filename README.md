@@ -1219,3 +1219,60 @@ Technical controls alone are not enough. Train users to never click links or ope
 This sprint demonstrated how spoofed phishing emails with malicious attachments can be delivered through an unprotected Postfix/Dovecot mail server using `swaks`, exposing critical vulnerabilities in email trust and attachment handling. The attack was documented under MITRE ATT&CK **T1566.001 (Spearphishing Attachment)**.
 
 Four layered defences were implemented and verified: attachment blocking via `mime_header_checks`, SPF records to prevent sender spoofing, open relay restrictions to limit mail server access, and warning banners to alert recipients of suspicious content. Together these controls significantly reduce the email attack surface and reflect industry-standard SOC defensive practice.
+
+-
+
+## Activity 4-1: Firewalls
+
+**Purpose:** Harden the network perimeter on ExternalGateway using stateful packet filtering, NAT, and controlled port forwarding to regulate all traffic entering and leaving the lab network.
+
+**What was built:** `iptables` was configured on ExternalGateway to enforce a strict default-deny policy across all chains, with explicit rules added to permit only authorised traffic. All rules were saved persistently to survive reboots.
+
+| Rule Type | Chain | Purpose |
+| --- | --- | --- |
+| Default DROP | INPUT, OUTPUT, FORWARD | Block all traffic unless explicitly permitted |
+| MASQUERADE | POSTROUTING (nat) | NAT for all outbound traffic via `eth0` |
+| DNS allow | OUTPUT, INPUT (port 53 TCP/UDP) | Permit name resolution |
+| FORWARD new connections | FORWARD (ports 80, 443) | Allow new HTTP and HTTPS sessions |
+| ESTABLISHED/RELATED | FORWARD (conntrack) | Stateful session handling in both directions |
+| DNAT | PREROUTING (nat, ports 80/443) | Redirect incoming web traffic to UbuntuServer (`192.168.1.80`) |
+| SNAT | POSTROUTING (nat, ports 80/443) | Ensure web server return traffic routes back through ExternalGateway |
+
+---
+
+## Configuration Steps
+
+- Default DROP policy applied to all three chains using `iptables --policy INPUT DROP`, `OUTPUT DROP`, and `FORWARD DROP`
+- MASQUERADE rule added to the POSTROUTING chain on `eth0` to enable NAT for outbound traffic, saved immediately with `netfilter-persistent save`
+- DNS traffic explicitly permitted on both OUTPUT and INPUT chains for UDP and TCP port 53
+- FORWARD rules added to allow new TCP connections on ports 80 and 443 in both directions between `eth0` and `eth1`
+- ESTABLISHED and RELATED traffic permitted in both directions using `conntrack --ctstate ESTABLISHED,RELATED` to support stateful sessions
+- DNAT rules added to the PREROUTING chain to redirect incoming port 80 and 443 traffic from `eth0` to the internal web server at `192.168.1.80`
+- SNAT rules added to the POSTROUTING chain on `eth1` to rewrite the source address of web server return traffic back to ExternalGateway's public IP
+- All rules saved persistently using `iptables-save` and confirmed restorable via `iptables-restore`
+
+![iptables ruleset configuration](img/4-image1.png)
+
+---
+
+## Verification
+
+The complete ruleset was verified using `iptables -L -v -n` and `iptables -t nat -L -v -n`. External access to the internal web server was confirmed from the Azure Windows host on both port 80 and port 443. Internet access from UbuntuDesktop was also confirmed as functioning correctly through the NAT configuration.
+
+![iptables -L -v -n output](img/4-image2.png)
+
+![iptables -t nat -L -v -n output](img/4-image3.png)
+
+From Azure desktop:
+
+![Web server access from Azure desktop](img/4-image4.png)
+
+From Ubuntu desktop:
+
+![Internet access from UbuntuDesktop](img/4-image5.png
+
+---
+
+**Key services:** `iptables` (default DROP, DNAT/SNAT, FORWARD rules, conntrack, `netfilter-persistent`)
+
+**Running on:** ExternalGateway
