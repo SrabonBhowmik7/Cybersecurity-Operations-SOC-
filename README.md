@@ -1568,78 +1568,102 @@ The firewall bypass attack is classified under MITRE ATT&CK technique **T1562.00
 
 ## Mitigation & Defense Strategies
 
-### Defense 1 — Enable iptables logging for dropped packets
+---
 
-Log all dropped packets so suspicious activity is visible in system logs.
+### Defense 1: Block fragmented packets
 
-On ExternalGateway, add logging rules before the DROP policy:
+Explicitly drop all fragmented packets to prevent firewall bypass attempts using packet fragmentation.
 
 ```
-sudo iptables -I INPUT 1 -j LOG --log-prefix "IPT-INPUT-DROP: " --log-level 4
-sudo iptables -I FORWARD 1 -j LOG --log-prefix "IPT-FORWARD-DROP: " --log-level 4
+sudo iptables -A INPUT -f -j DROP
+sudo iptables -A FORWARD -f -j DROP
+# Save rules:
 sudo netfilter-persistent save
 ```
 
-Check logs:
+![Block fragmented packets rule added](img/sp4-a-image10.png)
 
 ```
-sudo grep "IPT-INPUT-DROP" /var/log/syslog | tail -20
+# Test fragmented bypass is now blocked:
+sudo hping3 -S -p 80 -f 192.168.1.254 -c 5
+```
+
+![Fragmented packet bypass blocked](img/sp4-a-image11.png)
+
+Result: All packets dropped, fragmented packets now explicitly blocked.
+
+---
+
+### Defense 2: Enable SYN cookies
+
+SYN cookies protect against SYN-based bypass attempts and flood attacks without maintaining state for incomplete connections.
+
+```
+sudo sysctl -w net.ipv4.tcp_syncookies=1
+# Make permanent:
+echo 'net.ipv4.tcp_syncookies=1' | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+![SYN cookies enabled](img/sp4-a-image12.png)
+
+```
+# Verify:
+sysctl net.ipv4.tcp_syncookies
+# Result: net.ipv4.tcp_syncookies = 1
 ```
 
 ---
 
-### Defense 2 — Block fragmented packets explicitly
+### Defense 3: Explicit port whitelist — deny everything else
 
-Add a rule to explicitly drop all fragmented packets before they reach the firewall rules:
-
-```
-sudo iptables -I INPUT 1 -f -j DROP
-sudo iptables -I FORWARD 1 -f -j DROP
-sudo netfilter-persistent save
-```
-
-Verify the rules are in place:
+Only allow explicitly defined ports and drop everything else. This ensures no unexpected ports can be accessed even through bypass techniques.
 
 ```
-sudo iptables -L -v -n
+# Verify default DROP policy is set:
+sudo iptables -L INPUT | head -3
+sudo iptables -L FORWARD | head -3
 ```
+
+![Default DROP policy verified](img/sp4-a-image13.png)
+
+Result: `policy DROP`
+
+```
+# Only ports 80, 443, 53 should be allowed:
+sudo iptables -L -v -n | grep ACCEPT
+```
+
+![Allowed ports 80 443 53](img/sp4-a-image14.png)
+
+As we can see ports 80, 443, 53 are allowed.
 
 ---
 
-### Defense 3 — Rate limit connection attempts
+### Save and persist all rules
 
-Prevent port scanning and brute force by limiting how many new connections can come from a single IP:
+Ensure all firewall rules survive a reboot so the protection is permanent. However, saving rules is not really a defense. It is just making sure the defenses survive a reboot.
 
 ```
-sudo iptables -I INPUT 1 -p tcp --syn -m limit \
-  --limit 10/minute --limit-burst 20 -j ACCEPT
 sudo netfilter-persistent save
+sudo netfilter-persistent reload
 ```
 
----
-
-### Defense 4 — Verify rules persist after reboot
-
-Confirm all rules survive a system restart:
+![netfilter-persistent save and reload](img/sp4-a-image15.png)
 
 ```
-sudo reboot
+# Verify rules are saved:
+cat /etc/iptables/rules.v4
 ```
 
-After reboot, on ExternalGateway:
+![Saved rules in rules.v4](img/sp4-a-image16.png)
 
-```
-sudo iptables -L -v -n
-sudo iptables -t nat -L -v -n
-```
-
-All rules should be present exactly as before, confirming `netfilter-persistent` is working correctly.
+It proves all rules are saved and will survive a reboot.
 
 ---
 
 ## Summary
 
-This sprint demonstrated how `nmap` port scanning and `hping3` fragmented packet injection can be used to probe and attempt to bypass a firewall configured with a strict default DROP policy on ExternalGateway. All 1000 scanned ports appeared filtered, all blocked port connection attempts timed out, and all fragmented bypass packets were dropped and counted by `iptables`, confirming the firewall's effectiveness. The attack was documented under MITRE ATT&CK **T1562.004 (Impair Defenses: Disable or Modify System Firewall)**.
+This sprint demonstrated how an attacker can attempt to bypass a firewall by using port scanning and fragmented packet injection against the `iptables` ruleset on ExternalGateway. An `nmap` SYN scan revealed all 1000 ports in a filtered state, confirming the default DROP policy was actively blocking unauthorised access. Fragmented SYN packets sent via `hping3` to both open and blocked ports resulted in 100% packet loss, with the `iptables` INPUT chain recording 2867 dropped packets as evidence of the firewall successfully defeating all bypass attempts. The attack was documented under MITRE ATT&CK **T1562.004 (Impair Defenses: Disable or Modify System Firewall)**.
 
-Four additional hardening controls were implemented: `iptables` logging to make dropped packets visible in system logs, explicit fragmented packet blocking, rate limiting on new TCP connections to prevent scanning, and reboot persistence verification to confirm `netfilter-persistent` is saving all rules correctly.
-
+Three defenses were implemented and verified: explicit fragmented packet dropping rules were added to the INPUT and FORWARD chains to block fragmentation-based evasion techniques, SYN cookies were enabled at the kernel level to protect against SYN-based bypass attempts, and all firewall rules were persisted using `netfilter-persistent` to ensure protection survives system reboots. Together these controls demonstrate a hardened firewall configuration aligned with real-world network defence practices.
