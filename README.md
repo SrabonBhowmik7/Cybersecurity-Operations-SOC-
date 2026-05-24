@@ -64,15 +64,15 @@ The lab runs four Ubuntu 22.04 LTS virtual machines across three isolated networ
 
 1. [Activity 1 — DMZ Network Setup](#activity-1-dmz-network-setup)
 2. [Activity 2.1 — Secure Web Server](#activity-21-secure-web-server)
-3. [Activity 2.2 — DNS Server](#activity-22-dns-server)
-4. [Sprint 1 — SQL Injection](#sprint-1-sql-injection)
+3. [Sprint 1 — SQL Injection](#sprint-1-sql-injection)
+4. [Activity 2.2 — DNS Server](#activity-22-dns-server)
 5. [Sprint 2 — DNS Spoofing](#sprint-2-dns-spoofing)
 6. [Activity 3 — Email Server](#activity-3-email-server)
 7. [Sprint 3 — Phishing & Malware Simulation](#sprint-3-phishing--malware-simulation)
 8. [Activity 4-1 — Firewalls](#activity-4-1-firewalls)
 9. [Sprint 4 — Firewall Bypass](#sprint-4-firewall-bypass)
 
----
+--- 
 
 ## Prerequisites Before Starting
 
