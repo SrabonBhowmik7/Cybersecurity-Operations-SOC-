@@ -17,9 +17,9 @@ The lab runs four Ubuntu 22.04 LTS virtual machines across three isolated networ
 
 ## Lab Environment Overview
 
-```
+The network architecture is in the following : 
 ![Network Architecture](img/NetworkArchitecture.png )
-```
+
 
 | VM | IP Address | Role |
 | --- | --- | --- |
