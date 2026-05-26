@@ -18,19 +18,7 @@ The lab runs four Ubuntu 22.04 LTS virtual machines across three isolated networ
 ## Lab Environment Overview
 
 ```
-[ Internet ]
-      |
-[ ExternalGateway ]  ←  Border router, NAT, Firewall (iptables)
-      |
-[ DMZNetwork ]
-      |              \
-[ InternalGateway ]   [ UbuntuServer ]  ←  Web, Email, DNS
-  DNS, VPN, Squid          192.168.1.80
-      |
-[ InternalNetwork ]
-      |
-[ UbuntuDesktop ]  ←  Client, Attack machine, Thunderbird
-     10.10.1.100
+![Network Architecture](img/NetworkArchitecture.png )
 ```
 
 | VM | IP Address | Role |
