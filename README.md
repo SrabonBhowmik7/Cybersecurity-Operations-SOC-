@@ -1134,6 +1134,8 @@ Please run the attached patch file immediately to protect your account.
 This is mandatory. Failure to comply may result in data loss.
 
 IT Support Team" \
+      --attach-type application/x-sh \
+      --attach-name malware_simulation.sh \
       --attach ~/malware_simulation.sh
 ```
 
