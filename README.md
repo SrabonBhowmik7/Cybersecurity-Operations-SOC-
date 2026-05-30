@@ -1657,3 +1657,136 @@ It proves all rules are saved and will survive a reboot.
 This sprint demonstrated how an attacker can attempt to bypass a firewall by using port scanning and fragmented packet injection against the `iptables` ruleset on ExternalGateway. An `nmap` SYN scan revealed all 1000 ports in a filtered state, confirming the default DROP policy was actively blocking unauthorised access. Fragmented SYN packets sent via `hping3` to both open and blocked ports resulted in 100% packet loss, with the `iptables` INPUT chain recording 2867 dropped packets as evidence of the firewall successfully defeating all bypass attempts. The attack was documented under MITRE ATT&CK **T1562.004 (Impair Defenses: Disable or Modify System Firewall)**.
 
 Three defenses were implemented and verified: explicit fragmented packet dropping rules were added to the INPUT and FORWARD chains to block fragmentation-based evasion techniques, SYN cookies were enabled at the kernel level to protect against SYN-based bypass attempts, and all firewall rules were persisted using `netfilter-persistent` to ensure protection survives system reboots. Together these controls demonstrate a hardened firewall configuration aligned with real-world network defence practices.
+
+
+
+
+
+## Activity 4-2: Virtual Private Networks
+
+**Purpose:** Deploy a secure encrypted VPN tunnel into the internal network using OpenVPN, with a full PKI infrastructure built from scratch using Easy-RSA.
+
+**What was built:** OpenVPN was installed on InternalGateway as a routed TUN-based VPN server. A complete PKI was built using Easy-RSA to generate all required certificates and keys. UbuntuDesktop was configured as a VPN client using a bundled `.ovpn` configuration file, and `iptables` rules were added to ExternalGateway to allow VPN traffic through.
+
+| PKI Component | File | Purpose |
+| --- | --- | --- |
+| CA certificate | `ca.crt` | Signs and validates all other certificates |
+| Server certificate | `server.crt` | Authenticates the OpenVPN server |
+| Server key | `server.key` | Private key for the server |
+| Client certificate | `client1.crt` | Authenticates the VPN client |
+| Client key | `client1.key` | Private key for the client |
+| Diffie-Hellman parameters | `dh.pem` | Enables secure key exchange |
+| TLS HMAC key | `ta.key` | Adds an extra authentication layer |
+
+---
+
+## Configuration Steps
+
+### PKI and server setup on InternalGateway
+
+- OpenVPN and Easy-RSA installed via `apt`
+- Easy-RSA directory created and PKI initialised using `./easyrsa init-pki`
+- CA built using `./easyrsa build-ca` (passphrase: `password`, common name: default)
+
+![CA initialisation and build](img/4-2image13.png)
+
+- Server certificate request generated with `./easyrsa gen-req server nopass` and signed with `./easyrsa sign-req server server`
+
+![Server certificate request and signing](img/4-2image10.png)
+
+- Diffie-Hellman parameters generated using `./easyrsa gen-dh`
+- TLS HMAC key generated using `sudo openvpn --genkey secret ta.key`
+
+![DH parameters and TLS HMAC key generation](img/4-2image4.png)
+
+- All PKI files copied to `/etc/openvpn/` (`ca.crt`, `server.crt`, `server.key`, `dh.pem`, `ta.key`)
+
+![PKI files copied to /etc/openvpn/](img/4-2image11.png)
+
+- Sample `server.conf` copied from `/usr/share/doc/openvpn/examples/sample-config-files/` and edited to match the lab network
+- OpenVPN service started with `sudo systemctl start openvpn@server` and enabled on boot
+
+![OpenVPN service started and enabled](img/4-2image8.png)
+
+---
+
+### Client configuration
+
+- Client certificate and key generated using `./easyrsa gen-req client1 nopass` and signed with `./easyrsa sign-req client client1`
+
+![Client certificate request](img/4-2image5.png)
+
+![Client certificate signing](img/4-2image2.png)
+
+- Client config directory created at `~/client-configs/` with subdirectories for keys and files
+- All client keys copied into `~/client-configs/keys/` (`client1.crt`, `client1.key`, `ca.crt`, `ta.key`)
+- Sample `client.conf` copied and edited as `base.conf` with the server address and settings updated
+
+![base.conf edited with server address](img/4-2image1.png)
+
+![base.conf settings](img/4-2image12.png)
+
+![base.conf verified](img/4-2image9.png)
+
+- `make_config.sh` script created and executed to bundle all client keys and config into a single `client1.ovpn` file
+
+![make_config.sh script created](img/4-2image15.png)
+
+![client1.ovpn bundle generated](img/4-2image19.png)
+
+---
+
+### File transfer and client setup
+
+- Samba installed on both InternalGateway and UbuntuDesktop
+- `client1.ovpn` copied to the Samba shared folder at `/srv/samba/shared/` on InternalGateway
+
+![Samba share with client1.ovpn](img/4-2image16.png)
+
+- `smbclient` used on UbuntuDesktop to connect to the share and download `client1.ovpn`
+
+![smbclient download of client1.ovpn](img/4-2image6.png)
+
+---
+
+### iptables rules on ExternalGateway
+
+- FORWARD rules added to permit TCP and UDP traffic on port 1194 in both directions
+- DNAT rule added to redirect incoming UDP port 1194 traffic to InternalGateway (`192.168.1.1`)
+- SNAT rule added to ensure return VPN traffic routes back through ExternalGateway's public IP
+
+![iptables VPN rules added](img/4-2image14.png)
+
+- All updated rules saved using `iptables-save`
+
+![iptables-save output](img/4-2image3.png)
+
+---
+
+### Installing OpenVPN on UbuntuDesktop
+
+- OpenVPN and the Network Manager OpenVPN plugin installed on UbuntuDesktop
+
+![OpenVPN and Network Manager plugin installed](img/4-2image7.png)
+
+- `client1.ovpn` imported into Network Manager via the VPN settings GUI by navigating to **Settings > VPN > Add > Import from file**
+- VPN connection established from the system tray network icon and confirmed connected
+
+![VPN connection established](img/4-2image18.png)
+
+---
+
+## Verification
+
+The OpenVPN server status was confirmed running on InternalGateway using `systemctl status openvpn@server`. The `tun0` interface was visible on both InternalGateway and the client VM using `ip a`. A successful ping from UbuntuDesktop to InternalGateway's `tun0` IP address confirmed the encrypted tunnel was fully operational.
+
+![tun0 interface visible on both VMs](img/4-2image20.png)
+
+![Ping from UbuntuDesktop to tun0 confirmed](img/4-2image17.png)
+
+---
+
+**Key services:** OpenVPN (TUN mode), Easy-RSA PKI (`ca.crt`, `server.crt`, `client1.crt`, `dh.pem`, `ta.key`), `iptables` VPN rules (UDP 1194)
+
+**Running on:** InternalGateway (`192.168.1.1`) with VPN client on UbuntuDesktop (`10.10.1.100`)
+
