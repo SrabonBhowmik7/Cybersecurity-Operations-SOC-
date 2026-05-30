@@ -59,7 +59,7 @@ The network architecture is in the following :
 7. [Sprint 3 — Phishing & Malware Simulation](#sprint-3-phishing--malware-simulation)
 8. [Activity 4-1 — Firewalls](#activity-4-1-firewalls)
 9. [Sprint 4 — Firewall Bypass](#sprint-4-firewall-bypass)
-
+10. [🎥 Video Tutorials](#-video-tutorials)
 --- 
 
 ## Prerequisites Before Starting
@@ -1790,3 +1790,44 @@ The OpenVPN server status was confirmed running on InternalGateway using `system
 
 **Running on:** InternalGateway (`192.168.1.1`) with VPN client on UbuntuDesktop (`10.10.1.100`)
 
+
+
+---
+
+## 🎥 Video Tutorials
+
+All demonstration and walkthrough videos are hosted on Google Drive. Click the links below to watch each one.
+
+---
+
+### Activities
+
+| Activity | Video Link |
+| --- | --- |
+| Activity 1: DMZ Network Setup | [▶ Watch Video](https://drive.google.com/file/d/1kliTPPH_pAsRNd_g_m270yWeo7OmApdr/view?usp=sharing) |
+| Activity 2: Secure Web Server | [▶ Watch Video](https://drive.google.com/file/d/1gz2svmq7XW9gox_KL7jEPkOuJHfUUDYH/view?usp=sharing) |
+| Activity 2: DNS Server | [▶ Watch Video](https://drive.google.com/file/d/1O6XCZ0mt3D7hePKUHsYbQ9sljvS8atBD/view?usp=sharing) |
+| Activity 3: Email Server | [▶ Watch Video](https://drive.google.com/file/d/1tZWAlE_Do8ajgERzWXnnByhT2x9Jv7Wc/view?usp=sharing) |
+| Activity 4-1: Firewalls | [▶ Watch Video](https://drive.google.com/file/d/1OQ7rl9K5Nhx33BgZLGgu88cUqPwoRhII/view?usp=sharing) |
+| Activity 4-2: VPN | [▶ Watch Video](https://drive.google.com/file/d/1-AU8jpeu487nP-X2_JXHxwQo6r2bbcs3/view?usp=sharing) |
+
+---
+
+### Attack & Defense Sprints
+
+| Sprint | Attack Video | Defense Video |
+| --- | --- | --- |
+| Sprint 1: SQL Injection | [▶ Watch Attack](https://drive.google.com/file/d/1tbXUrvnr7SPl5YgV7tL5Qc_H2aofWt4k/view?usp=sharing) | [▶ Watch Defense](https://drive.google.com/file/d/158GKaqhfCflvdsOBCyxuAEtQ-o8ZDopQ/view?usp=sharing) |
+| Sprint 2: DNS Spoofing | [▶ Watch Attack](https://drive.google.com/file/d/1c9CPZGVck6Nnf3S4eCButE9R4YVIhJC_/view?usp=sharing) | [▶ Watch Defense](https://drive.google.com/file/d/1isUOID2kD0pilNbSI7J6_GvcF6X8-PBj/view?usp=sharing) |
+| Sprint 3: Phishing & Malware | [▶ Watch Attack](https://drive.google.com/file/d/13h7Do7YnTa9SQ_hxva3bYgOia2qcVJYy/view?usp=sharing) | [▶ Watch Defense](https://drive.google.com/file/d/1KerK4AtAVoMR4Q7OYIAWKDrgE_YPNrGN/view?usp=sharing) |
+| Sprint 4: Firewall Bypass | [▶ Watch Attack](https://drive.google.com/file/d/1ILrCiLosy0S7fDMCfZw1FsmqXihRMiJW/view?usp=sharing) | [▶ Watch Defense](https://drive.google.com/file/d/1SMEhRNbSKBxuI8T_xoe7NcMwhU5BdyPc/view?usp=sharing) |
+
+---
+
+### Evidence Files
+
+| File | Link |
+| --- | --- |
+| Sprint 1: sqli_evidence.txt | [▶ View File](https://drive.google.com/file/d/1S9KIF770hCp534lspb6-exxZldhP3Ssb/view?usp=sharing) |
+
+---
